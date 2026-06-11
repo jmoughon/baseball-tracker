@@ -16,17 +16,17 @@ const STORAGE_KEY = "scout-tracker-v1";
 
 const uid = () => Math.random().toString(36).slice(2, 9);
 
-async function loadData() {
+function loadData() {
   try {
-    const r = await window.storage.get(STORAGE_KEY);
-    return r ? JSON.parse(r.value) : null;
+    const r = localStorage.getItem(STORAGE_KEY);
+    return r ? JSON.parse(r) : null;
   } catch {
     return null;
   }
 }
-async function saveData(data) {
+function saveData(data) {
   try {
-    await window.storage.set(STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (e) {
     console.error("save failed", e);
   }
@@ -207,14 +207,12 @@ export default function ScoutTracker() {
   const [newTeamName, setNewTeamName] = useState("");
 
   useEffect(() => {
-    (async () => {
-      const d = await loadData();
-      if (d) setData(d);
-      else {
-        const teamId = uid();
-        setData({ teams: [{ id: teamId, name: "Opponent 1", batters: [] }], activeTeamId: teamId });
-      }
-    })();
+    const d = loadData();
+    if (d) setData(d);
+    else {
+      const teamId = uid();
+      setData({ teams: [{ id: teamId, name: "Opponent 1", batters: [] }], activeTeamId: teamId });
+    }
   }, []);
 
   useEffect(() => {
@@ -417,7 +415,7 @@ export default function ScoutTracker() {
   );
 }
 
-// ---------- sheet image (replaces window.print, which is blocked in this sandbox) ----------
+// ---------- sheet image (a downloadable PNG travels better than window.print on phones) ----------
 const escXML = (v) =>
   String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
